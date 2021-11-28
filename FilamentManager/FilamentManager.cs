@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -12,47 +13,74 @@ namespace FilamentManager
 {
     public partial class FilamentManager : Form
     {
+        Filament[] Filaments = new Filament[12];
         public FilamentManager()
         {
+            //string[] args = Environment.GetCommandLineArgs();
+            //int screen = Convert.ToInt32(args[1]);
+
             InitializeComponent();
+            
+            
+
+            Filaments[0] = new Filament() { Color = Color.Red };
+            Filaments[1] = new Filament() { Color = Color.Blue };
+            Filaments[2] = new Filament() { Color = Color.Green };
+            Filaments[3] = new Filament() { Color = Color.Yellow };
+            Filaments[4] = new Filament() { Color = Color.Black };
+            Filaments[5] = new Filament() { Color = Color.White };
+            Filaments[6] = new Filament() { Color = Color.Aquamarine };
+            Filaments[7] = new Filament() { Color = Color.DarkGreen };
+            Filaments[8] = new Filament() { Color = Color.Chocolate };
+            Filaments[9] = new Filament() { Color = Color.Crimson };
+            Filaments[10] = new Filament() { Color = Color.Linen };
+            Filaments[11] = new Filament() { Color = Color.Cornsilk };
+
+            pbxSpoolA1.Tag = Filaments[0];
+            pbxSpoolA2.Tag = Filaments[1];
+            pbxSpoolA3.Tag = Filaments[2];
+            pbxSpoolA4.Tag = Filaments[3];
+            pbxSpoolB1.Tag = Filaments[4];
+            pbxSpoolB2.Tag = Filaments[5];
+            pbxSpoolB3.Tag = Filaments[6];
+            pbxSpoolB4.Tag = Filaments[7];
+            pbxSpoolC1.Tag = Filaments[8];
+            pbxSpoolC2.Tag = Filaments[9];
+            pbxSpoolC3.Tag = Filaments[10];
+            pbxSpoolC4.Tag = Filaments[11];
+
+
+            // Launch form on secondary monitor
             FilamentMonitor monitor = new FilamentMonitor();
+            monitor.SelectedFilament = Filaments[6];
+            monitor.StartPosition = FormStartPosition.Manual;
+            monitor.Location = Screen.AllScreens[0].WorkingArea.Location;
             monitor.Show();
         }
 
-        private int rotation = 0;
 
-        private void DrawFillamentSpool(PictureBox p, Graphics g, Color pFillamentColor, int rotation)
+        private void tmrSpoolRotate_Tick(object sender, EventArgs e)
         {
-            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            foreach (Filament f in Filaments)
+                f.DrawSpoolTick();
 
-            SolidBrush brushFillament = new SolidBrush(pFillamentColor);
-
-            int widthTenth = p.Width / 10;
-            int heightTenth = p.Height / 10; 
-
-            g.FillEllipse(Brushes.Black, new Rectangle(0, 0, p.Width, p.Height));
-
-            Rectangle fillamentRect = new Rectangle(widthTenth, heightTenth, p.Width - 2 * widthTenth, p.Height - 2 * heightTenth);
-
-            g.FillPie(brushFillament, fillamentRect, 0 + rotation, 90);
-            g.FillPie(brushFillament, fillamentRect, 180 + rotation, 90);
-
-            Rectangle innerRect = new Rectangle(widthTenth*4, heightTenth*4, p.Width - 8 * widthTenth, p.Height - 8 * heightTenth);
-            g.FillEllipse(Brushes.White, innerRect);
+            foreach(GroupBox gb in Controls.OfType<GroupBox>())
+            {
+                foreach (PictureBox pb in gb.Controls.OfType<PictureBox>())
+                {
+                    Debug.Print(pb.Name);
+                    pb.Invalidate();
+                }
+            }
+            
         }
 
-        private void pictureBox1_Paint(object sender, PaintEventArgs e)
+        private void PaintEventFilamentSpool(object sender, PaintEventArgs e)
         {
-
-            DrawFillamentSpool((PictureBox)sender, e.Graphics, Color.Red, rotation);
+            PictureBox pb = (PictureBox)sender;
+            Filament flm = (Filament)pb.Tag;
+            flm.DrawSpool(pb, e.Graphics);         
         }
 
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            rotation++;
-            if (rotation >= 359) rotation = 0; 
-
-            pictureBox1.Invalidate(); 
-        }
     }
 }
